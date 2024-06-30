@@ -1,0 +1,76 @@
+---
+Example of third question
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get all combinations of supplier and part information such that the supplier and part in question are colocated.
+
+Output:
++---+------+------+-------+---+------+------+------+
+|sno|sname |status|city   |pno|pname |color |weight|
++---+------+------+-------+---+------+------+------+
+|S1 |Smith |20    |London |P1 |Nut   |Red   |12    |
+|S1 |Smith |20    |London |P4 |Screw |Red   |14    |
+|S1 |Smith |20    |London |P6 |Cog   |Red   |19    |
+|S2 |Jones |10    |Paris  |P2 |Bolt  |Green |17    |
+|S2 |Jones |10    |Paris  |P5 |Cam   |Blue  |12    |
+|S3 |Blake |30    |Paris  |P2 |Bolt  |Green |17    |
+|S3 |Blake |30    |Paris  |P5 |Cam   |Blue  |12    |
+|S4 |Clark |20    |London |P1 |Nut   |Red   |12    |
+|S4 |Clark |20    |London |P4 |Screw |Red   |14    |
+|S4 |Clark |20    |London |P6 |Cog   |Red   |19    |
++---+------+------+-------+---+------+------+------+
+
+
+---
+output
+---
+{
+  "reasoning_process" : "Select data from the Suppliers and Parts tables, and the condition is that the supplier and parts are located in the same city (Suppliers.city equals Parts.city). The query will return all the information of all suppliers located in the same city as well as the part number (pno), part name (pname), color (color) and weight (weight) of the relevant parts. This effectively finds all geographically overlapping supplier and part details.",
+  "sql": "select Suppliers.*, Parts.pno, Parts.pname, Parts.color, Parts.weight from Suppliers, Parts where Suppliers.city = Parts.city ;"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

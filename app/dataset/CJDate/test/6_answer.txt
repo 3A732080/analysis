@@ -1,0 +1,1 @@
+select distinct Suppliers.sname from Suppliers where Suppliers.sno in ( select Shipments.sno from Shipments where Shipments.pno in ( select Parts.pno from Parts where Parts.color = 'Red' ) ) ;

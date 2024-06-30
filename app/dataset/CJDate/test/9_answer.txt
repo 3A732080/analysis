@@ -1,0 +1,1 @@
+SELECT Shipments.pno, SUM(Shipments.qty) AS totqty FROM Shipments GROUP BY Shipments.pno;

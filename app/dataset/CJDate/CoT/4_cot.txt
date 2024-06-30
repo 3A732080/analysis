@@ -1,0 +1,70 @@
+---
+Example of question four
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get all combinations of supplier and part information where the supplier and part concerned are collocated, but omitting suppliers with status 20.
+
+Output:
++---+-----+------+-----+---+-----+-----+
+|sno|sname|status|city |pno|pname|city |
++---+-----+------+-----+---+-----+-----+
+|S2 |Jones|10    |Paris|P2 |Bolt |Paris|
+|S2 |Jones|10    |Paris|P5 |Cam  |Paris|
+|S3 |Blake|30    |Paris|P2 |Bolt |Paris|
+|S3 |Blake|30    |Paris|P5 |Cam  |Paris|
++---+-----+------+-----+---+-----+-----+
+
+
+---
+output
+---
+{
+  "reasoning_process" : "Obtain all possible combinations of suppliers and parts by performing Cartesian product from the Suppliers table and the Parts table, and filter the combinations that are located in the same city and whose supplier status is not 20",
+  "sql": "SELECT S.*, P.pno, P.pname, P.city FROM Suppliers S, Parts P WHERE S.City = P.City AND S.Status <> 20"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

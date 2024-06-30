@@ -1,0 +1,67 @@
+---
+Example of question sixteen
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get supplier numbers for suppliers with status greater than 25.
+
+Output:
++---+
+|sno|
++---+
+|S3 |
+|S5 |
++---+
+
+---
+output
+---
+{
+  "reasoning_process" : "The query uses the WHERE clause to filter records in the Suppliers table with status greater than 25.",
+  "sql": "Select sno from Suppliers where status > 25"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

@@ -1,0 +1,20 @@
+SELECT * FROM (
+SELECT TOP 1 name results FROM (
+  SELECT user_id, count(movie_id) ratings
+  FROM MovieRating
+  GROUP BY user_id
+) t
+JOIN Users u ON t.user_id = u.user_id
+ORDER BY ratings DESC, results
+) u
+UNION ALL
+SELECT * FROM (
+SELECT TOP 1 title results FROM (
+  SELECT movie_id, avg(.0+rating) ratings
+  FROM MovieRating
+  WHERE LEFT(created_at, 7) = '2020-02'
+  GROUP BY movie_id
+) t
+JOIN Movies m ON t.movie_id=m.movie_id
+ORDER BY ratings DESC, results
+) m

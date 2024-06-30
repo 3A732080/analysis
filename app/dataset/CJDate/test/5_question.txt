@@ -1,0 +1,61 @@
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get supplier names for suppliers who supply all parts.
+
+Output:
++-----+
+|sname|
++-----+
+|?    |
++-----+
+
+
+---
+
+Please reply in json format according to the above structure, without redundant output and escape characters, so that I can get the MS SQL syntax for testing:
+example(No escape characters):
+
+{
+  "reasoning_process" : "Considering that we are using SQL Server, please describe the reasoning process for establishing the corresponding SQL query for the problem based on the given table information. Explain your reasoning steps first.",
+  "sql": " "
+}

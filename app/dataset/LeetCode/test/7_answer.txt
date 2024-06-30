@@ -1,0 +1,8 @@
+with cte as(
+select case 
+when id%2=1 then lead(id,1,id) over(order by id)
+when id%2=0 then id-1
+end id,student
+from seat)
+select *from cte
+order by id

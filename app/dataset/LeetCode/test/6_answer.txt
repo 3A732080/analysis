@@ -1,0 +1,8 @@
+select e.name
+from Employee as e
+where e.id = any(
+    select sub_e.managerId
+    from Employee as sub_e
+    group by sub_e.managerId
+    having count(sub_e.managerId) >= 5
+)

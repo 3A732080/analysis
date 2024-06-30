@@ -1,0 +1,67 @@
+---
+Example of question eleven
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get supplier names for suppliers who supply at least all those parts supplied by supplier S2.
+
+Output:
++-----+
+|sname|
++-----+
+|Smith|
+|Jones|
++-----+
+
+---
+output
+---
+{
+  "reasoning_process" : "Use the two-level NOT EXISTS subquery to realize that the parts supplied by the supplier include at least all parts supplied by supplier S2. The first level NOT EXISTS subquery filters out those parts supplied by S2 and checks whether there are any cases that are not supplied by the target supplier SX. The second level NOT EXISTS subquery checks each part supplied by S2 to confirm whether each part supplied by S2 is also supplied by SX.",
+  "sql": "SELECT SX.sname FROM Suppliers SX WHERE NOT EXISTS ( SELECT SPX.* FROM Shipments SPX WHERE SPX.sno = 'S2' AND NOT EXISTS ( SELECT SPY.* FROM Shipments SPY WHERE SPY.sno = SX.sno AND SPY.pno = SPX.pno) )"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

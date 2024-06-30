@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  python-service:
+    image: python:3.9
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    tty: true
+    ports:
+     - 80:8000
+    build:
+      context: ./app
+
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+    ports:
+      - "1434:1433"
+    volumes:
+      - ./sql_data:/var/opt/mssql

@@ -1,0 +1,9 @@
+SELECT pno
+FROM Parts
+WHERE weight > 18
+
+UNION
+
+SELECT pno
+FROM Shipments
+WHERE sno = 'S2' ;

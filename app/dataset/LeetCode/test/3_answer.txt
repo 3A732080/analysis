@@ -1,0 +1,4 @@
+WITH t1 as
+    (select name,(CASE WHEN referee_id IS NULL THEN '0' ELSE referee_id END) as ref from Customer)
+
+select name from t1 where ref<>2;

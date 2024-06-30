@@ -1,0 +1,73 @@
+I hope you can help me solve some SQL problems. I will provide you with some examples to consider, each scenario using the same database. Consider the questions and repositories outlined below and describe the reasoning process used to address these questions. After that, I'll pose a SQL question and hope you can provide a solution and the rationale behind it.
+---
+Example of first question
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : For all parts, get the part number and the weight of that part in grams, where weights are given in table Parts in pounds
+
+Output:
++---+-----+
+|pno|gmwt |
++---+-----+
+|P1 |5448 |
+|P2 |7718 |
+|P3 |7718 |
+|P4 |6356 |
+|P5 |5448 |
+|P6 |8626 |
++---+-----+
+
+
+---
+output
+---
+{
+  "reasoning_process" : "Get the part number (pno) for all parts and their weight converted to grams (since 1 pound equals 454 grams, multiply the weight by 454). This query will select the pno and converted weight (gmwt) of each part from the Parts table.",
+  "sql": "select Parts.pno, Parts.weight * 454 as gmwt from Parts ;"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

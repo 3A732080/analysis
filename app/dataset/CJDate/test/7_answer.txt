@@ -1,0 +1,1 @@
+select distinct Suppliers.sname from Suppliers where exists ( select * from Shipments where Shipments.sno = Suppliers.sno and Shipments.pno = 'P2' ) ;

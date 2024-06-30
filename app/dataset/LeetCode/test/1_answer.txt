@@ -1,0 +1,6 @@
+SELECT DISTINCT (A.class) 
+FROM(
+    SELECT class,COUNT(student) OVER (PARTITION BY class) [cnt]
+    FROM Courses
+) A 
+WHERE A.[cnt] >=5

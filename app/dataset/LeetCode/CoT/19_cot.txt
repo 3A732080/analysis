@@ -1,0 +1,55 @@
+---
+Example of question thirty-six
+---
+Table: Numbers
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| num         | int  |
+| frequency   | int  |
++-------------+------+
+num is the primary key (column with unique values) for this table.
+Each row of this table shows the frequency of a number in the database.
+
+The median is the value separating the higher half from the lower half of a data sample.
+
+Write a solution to report the median of all the numbers in the database after decompressing the Numbers table. Round the median to one decimal point.
+
+The result format is in the following example.
+
+
+Example 1:
+
+Input:
+Numbers table:
++-----+-----------+
+| num | frequency |
++-----+-----------+
+| 0   | 7         |
+| 1   | 1         |
+| 2   | 3         |
+| 3   | 1         |
++-----+-----------+
+Output:
++--------+
+| median |
++--------+
+| 0.0    |
++--------+
+Explanation:
+If we decompress the Numbers table, we will get [0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 3], so the median is (0 + 0) / 2 = 0.
+
+---
+output
+---
+{
+  "reasoning_process" : "Calculate the median of all numbers in the database and round to one decimal place. First calculate the cumulative frequency of occurrence of each number (CumulativeSum) and the total frequency of all numbers (TotalFrequency). Then consider whether the total frequency is odd or even and find the number where the median is. If the total frequency is odd, the median will be the first number whose cumulative frequency exceeds half the total frequency. If the total frequency is even, the median may involve calculating the average of two numbers whose cumulative frequencies are slightly above and slightly below half the total frequency, respectively.",
+  "sql": "WITH CTE_Numbers AS ( SELECT Number, Frequency, SUM(Frequency) OVER (ORDER BY Number) AS CumulativeSum, SUM(Frequency) OVER () AS TotalFrequency FROM Numbers ) SELECT ROUND(AVG(CAST(Number AS FLOAT)), 1) AS Median FROM CTE_Numbers WHERE Number = ( SELECT TOP 1 Number FROM CTE_Numbers WHERE CumulativeSum >= (TotalFrequency / 2.0) ORDER BY Number ASC ) OR Number = ( SELECT TOP 1 Number FROM CTE_Numbers WHERE CumulativeSum - Frequency < (TotalFrequency / 2.0) ORDER BY Number DESC );"
+}
+
+---
+
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+
+---

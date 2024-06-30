@@ -1,0 +1,66 @@
+---
+Example of question seventeen
+---
+
+Table Suppliers
++---+-----+------+-------+
+|sno|sname|status|city   |
++---+-----+------+-------+
+|S1 |Smith|20    |London |
+|S2 |Jones|10    |Paris  |
+|S3 |Blake|30    |Paris  |
+|S4 |Clark|20    |London |
+|S5 |Adams|30    |Athens |
++---+-----+------+-------+
+
+Table Parts
++---+-----+-----+------+-------+
+|pno|pname|color|weight|city   |
++---+-----+-----+------+-------+
+|P1 |Nut  |Red  |12    |London |
+|P2 |Bolt |Green|17    |Paris  |
+|P3 |Screw|Blue |17    |Oslo   |
+|P4 |Screw|Red  |14    |London |
+|P5 |Cam  |Blue |12    |Paris  |
+|P6 |Cog  |Red  |19    |London |
++---+-----+-----+------+-------+
+
+Table Shipments
++---+----+---+
+|sno|pno |qty|
++---+----+---+
+|S1	|P1  |300|
+|S1	|P2  |200|
+|S1	|P3  |400|
+|S1	|P4  |200|
+|S1	|P5  |100|
+|S1	|P6  |100|
+|S2	|P1  |300|
+|S2	|P2  |400|
+|S3	|P2  |200|
+|S4	|P2  |200|
+|S4	|P4  |300|
+|S4	|P5  |400|
++---+----+---+
+
+
+Question : Get the maximum and minimum quantity for part P2.
+
+Output:
++----+----+
+|maxq|minq|
++----+----+
+|400 |200 |
++----+----+
+
+---
+output
+---
+{
+  "reasoning_process" : "Find all delivery records related to part P2 from the Shipments table, that is, pno = 'P2', and then use the max() and min() aggregate functions on qty respectively to calculate the maximum and minimum quantities of these delivery records, and finally use The SELECT clause returns these two results as maxq and minq.",
+  "sql": "select max ( Shipments.qty ) as maxq, min ( Shipments.qty ) as minq from Shipments where Shipments.pno = 'P2' ;"
+}
+
+---
+Please keep in mind the reasoning process for solving the problem, I will provide the next sample question later...
+---

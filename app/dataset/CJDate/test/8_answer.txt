@@ -1,0 +1,1 @@
+select Suppliers.sno from Suppliers where Suppliers.status < ( select max ( Suppliers.status ) from Suppliers ) ;
