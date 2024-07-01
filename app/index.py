@@ -20,10 +20,12 @@ def home():
 def styles():
     return send_from_directory(os.getcwd(), 'styles.css')
 
+
 @app.route('/images/<dbname>')
 def serve_database_image(dbname):
     filename = f"{dbname}.png"
     return send_from_directory(app.static_folder, filename)
+
 
 @app.route('/generate_table', methods=['POST'])
 def generate_table():
@@ -81,7 +83,6 @@ def get_dependency_parse():
     
     return jsonify({'html': dep_html})
 
-
 @app.route('/get_sql', methods=['POST'])
 def get_sql():
     database = request.json.get("database")
@@ -108,13 +109,10 @@ def query():
 
     return jsonify({"res": exec(question, action)})
 
-
-
 @app.route('/chatgpt_api', methods=['POST'])
 def chat_chatGPT():
     database = request.json.get("database")
     question = request.json.get("question")
-    
 
     if database == '資料庫-1':
         database = 'data_1'
@@ -130,7 +128,6 @@ def chat_chatGPT():
 def chat_gemini():
     database = request.json.get("database")
     question = request.json.get("question")
-    
 
     if database == '資料庫-1':
         database = 'data_1'
@@ -147,7 +144,6 @@ def chat_gemini():
 def chat_claude():
     database = request.json.get("database")
     question = request.json.get("question")
-    
 
     if database == '資料庫-1':
         database = 'data_1'
@@ -164,7 +160,6 @@ def chat_claude():
 def execute_query():
     database = request.json.get("database")
     sql = request.json.get("sql")
-    
 
     if database == '資料庫-1':
         from question_data_1 import exec

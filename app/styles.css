@@ -69,6 +69,12 @@
 .btn-c {
     background-color: rgb(252, 209, 134);
 }
+.btn-b {
+    background-color: rgb(180, 212, 255);
+}
+.btn-p {
+    background-color: rgb(241, 229, 209);
+}
 .table-spacing {
     margin-top: 25px; 
 }
@@ -123,28 +129,30 @@
     margin-bottom: 20px; 
 }
 
+.modalBG{
+    background-color: rgb(255,204,112,0.1); /*淡紅色背景，透明度為0.5*/
+}
 
 .image-dialog img {
     max-width: 100%; 
     height: auto; 
 }
 
-
 @media (max-width: 768px) {
     .image-dialog {
-        width: 90%; 
+        width: 50%; 
     }
 }
 
 @media (min-width: 769px) and (max-width: 992px) {
     .image-dialog {
-        width: 70%; 
+        width: 50%; 
     }
 }
 
 @media (min-width: 993px) {
     .image-dialog {
-        width: 50%;  
+        width: 45%;  
     }
 }
 
@@ -165,8 +173,6 @@
     height: auto; 
     font-size: 24px; 
 }
-
-
 
 .dependency-dialog {
     width: auto;

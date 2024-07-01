@@ -9,6 +9,7 @@ def data_get(data, path, default = None):
     keys = path.split('.')
     try:
         for key in keys:
+            
             if key.isdigit():
                 data = data[int(key)]
             else:
@@ -26,7 +27,7 @@ def dump(*args):
     for arg in args:
         tqdm.write(pprint.pformat(arg, indent=1, width=120))
 
-nlp = spacy.load("en_core_web_trf")
+nlp = spacy.load("en_core_web_md")
 
 def similarity(text1, text2):
     text1 = text1.replace("_", ' ')
@@ -34,7 +35,7 @@ def similarity(text1, text2):
 
     vec1 = nlp(text1).vector
     vec2 = nlp(text2).vector
-
+    
     return vec1.dot(vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 def print_table_leetcode_style(data):
@@ -108,12 +109,12 @@ def print_table_result_html(data):
         column_widths.append(max_width)
 
     html_output = "<table class='table table-bordered'>"
-
     html_output += "<thead><tr>"
-    for col in columns:
-        html_output += f"<th>{col}</th>"
-    html_output += "</tr></thead>"
 
+    for col in columns:
+        html_output += f"<th class='column-background'>{col}</th>"
+    
+    html_output += "</tr></thead>"
     html_output += "<tbody>"
     if values:
         for row in values:
