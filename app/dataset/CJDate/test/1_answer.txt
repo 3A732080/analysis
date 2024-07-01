@@ -1,1 +1,0 @@
-Select distinct pno, city from Suppliers, Shipments where Shipments.sno = Suppliers.sno

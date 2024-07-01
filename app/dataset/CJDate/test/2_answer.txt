@@ -1,3 +1,0 @@
-SELECT *
-FROM Parts
-WHERE PName LIKE 'C%'
