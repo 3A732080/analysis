@@ -1,6 +1,6 @@
 .container {
     width: 100%;
-    max-width: 100%; 
+    max-width: 100%;
     margin: auto;
     padding: 15px;
 }
@@ -69,64 +69,65 @@
 .btn-c {
     background-color: rgb(252, 209, 134);
 }
-.btn-b {
-    background-color: rgb(180, 212, 255);
-}
 .btn-p {
+    background-color: rgb(180, 212, 255);
     background-color: rgb(241, 229, 209);
 }
 .table-spacing {
-    margin-top: 25px; 
+    margin-top: 25px;
 }
 .label-spacing{
     margin-top: 5px;
 }
 .vertical-line {
-    width: 1px;  
-    background-color: rgba(0,0,0,0.1); 
-    height: 100%; 
+    width: 1px; 
+    background-color: rgba(0,0,0,0.1);
+    height: 100%;
 }
 .vertical-line-container::after {
     content: "";
     position: absolute;
-    left: 50%; 
+    left: 50%;
     top: 0;
     bottom: 0;
     width: 1px;
     background-color: rgba(0,0,0,0.1);
 }
 .vertical-line-container {
-    position: relative; 
+    position: relative;
 }
 .column-background {
     background-color: #E78895;
-    text-align: center;
-    
+   
 }
 .value-background {
     background-color: #ffffff;
     padding-left: 20px;
 }
-.custom-bordered {
+.custom-borderedaaa {
     border: 1px solid black  !important;
     width: auto;
-    
+   
 }
 .custom-bordered th,
 .custom-bordered td {
-    border: 1px solid black  !important;
-    padding: 4px;
+    padding: 10px;
     padding-left: 10px;
+}
+.exec-time-display {
+    display: block;
+   
+    font-size: 16px;
+    color: #333;
 }
 .analysis-section { 
     background-color: #f6f0e6; 
-    
     border-radius: 5px;
     margin: auto; 
     box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
 }
 .table-margin {
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
 }
 
 .modalBG{
@@ -134,8 +135,8 @@
 }
 
 .image-dialog img {
-    max-width: 100%; 
-    height: auto; 
+    max-width: 100%;
+    height: auto;
 }
 
 @media (max-width: 768px) {
@@ -152,26 +153,26 @@
 
 @media (min-width: 993px) {
     .image-dialog {
-        width: 45%;  
+        width: 45%;
     }
 }
 
 .dependency-output {
-    width: 100%; 
-    overflow-x: auto; 
+    width: 100%;
+    overflow-x: auto;
 }
 
 .dependency-output svg {
-    
+   
     width: 100% !important;
-    
-    height: auto !important; 
-    display: block; 
+   
+    height: auto !important;
+    display: block;
 }
 .svg-container svg {
-    width: 100%; 
-    height: auto; 
-    font-size: 24px; 
+    width: 100%;
+    height: auto;
+    font-size: 24px;
 }
 
 .dependency-dialog {
@@ -179,17 +180,15 @@
     max-width: 95%;
 }
 
-
 @media (min-width: 768px) {
     .dependency-dialog {
-        max-width: 80%; 
+        max-width: 80%;
     }
 }
 
-
 @media (min-width: 1200px) {
     .dependency-dialog {
-        max-width: 80%; 
+        max-width: 80%;
     }
 }
 

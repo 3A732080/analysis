@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自然語言查詢輸入</title>
-
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/vue@3"></script>
@@ -54,7 +53,7 @@
             </div>
             <div class="card">
                 <div class="card-header">
-                    邏輯形式轉 SQL
+                    Text → LF → SQL 轉換
                 </div>
                 <div class="card-body">
                     <div class="row justify-content-center">
@@ -62,7 +61,6 @@
                             <div class="form-group">
                                 <div @click="openSvgModal" v-html="dependencyHtml" class="dependency-output" style="cursor: pointer;"></div>
                             </div>
-
                             <div class="modal fade" id="svgModal" tabindex="-1" role="dialog" aria-labelledby="svgModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg dependency-dialog" role="document">
                                     <div class="modal-content">
@@ -79,7 +77,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <button @click="fetchDependency" class="btn btn-p">語法結構分析</button>
+                                <button @click="fetchDependency" class="btn btn-primary">語法結構分析</button>
                                 <span v-if="isLoadingAnalysis" class="loading-message">請稍候...</span>
                             </div>
                         </div>
@@ -107,9 +105,10 @@
                                 <b><label>SQL 的執行結果：</label></b>
                                 <div v-if="sqlResult" v-html="sqlResult" class="table-responsive"></div>
                                 <input v-else type="text" class="form-control" readonly>
+                                <span ref="ExecTime" class="exec-time-display"></span>
                             </div>
                             <div class="form-group">
-                                <button @click="executeSQL" class="btn btn-b" :class="{ 'disabled-btn': !convertedSQL }" :disabled="!convertedSQL">
+                                <button @click="executeSQL" class="btn btn-p" :class="{ 'disabled-btn': !convertedSQL }" :disabled="!convertedSQL">
                                     執行 SQL
                                 </button>
                                 <span v-if="isLoadingExecute" class="loading-message">請稍候...</span>
@@ -127,8 +126,10 @@
                 <div class="card-body">
                     <p id="chatgpt-result" ref="chatgptResult"></p>
                     <button @click="fetchChatGPT" class="btn btn-c">預測 SQL</button>
+                    <span v-if="isLoadingGPT" class="loading-message">請稍候...</span>
                     <hr>
                     <div class="table-responsive" v-html="chatgptSql" ref="chatgptSqlDisplay"></div>
+                    <span ref="chatgptSqlExecTime" class="exec-time-display"></span>
                     <button @click="executeModelSQL('chatgpt')" class="btn btn-secondary table-spacing">執行 SQL</button>
                 </div>
             </div>
@@ -139,8 +140,10 @@
                 <div class="card-body">
                     <p id="gemini-result" ref="geminiResult"></p>
                     <button @click="fetchGemini" class="btn btn-c">預測 SQL</button>
+                    <span v-if="isLoadingGemini" class="loading-message">請稍候...</span>
                     <hr>
                     <div class="table-responsive" v-html="geminiSql" ref="geminiSqlDisplay"></div>
+                    <span ref="geminiSqlExecTime" class="exec-time-display"></span>
                     <button @click="executeModelSQL('gemini')" class="btn btn-secondary table-spacing">執行 SQL</button>
                 </div>
             </div>
@@ -151,8 +154,10 @@
                 <div class="card-body">
                     <p id="claude-result" ref="claudeResult"></p>
                     <button @click="fetchClaude" class="btn btn-c">預測 SQL</button>
+                    <span v-if="isLoadingClaude" class="loading-message">請稍候...</span>
                     <hr>
                     <div class="table-responsive" v-html="claudeSql" ref="claudeSqlDisplay"></div>
+                    <span ref="claudeSqlExecTime" class="exec-time-display"></span>
                     <button @click="executeModelSQL('claude')" class="btn btn-secondary table-spacing">執行 SQL</button>
                 </div>
             </div>
@@ -166,7 +171,7 @@
     createApp({
         data() {
             return {
-                databases: ['資料庫-1', '資料庫-2'], 
+                databases: ['資料庫-1', '資料庫-2'],
                 selectedDatabase: '',
                 databaseContent: '',
                 databaseImage: '',
@@ -176,14 +181,18 @@
                 showModal: false,
                 convertedSQL: '',
                 sqlResult: '',
-                chatgptSql: '', 
-                geminiSql: '', 
-                claudeSql: '', 
+                ExecTime: '',
+                chatgptSql: '',
+                geminiSql: '',
+                claudeSql: '',
                 errorAnalysis: '',
                 errorAnalysisData: [],
                 isLoadingAnalysis: false,
                 isLoadingConvert: false,
                 isLoadingExecute: false,
+                isLoadingGPT: false,
+                isLoadingGemini: false,
+                isLoadingClaude: false,
                 exampleQueries: []
             };
         },
@@ -191,23 +200,32 @@
             handleResize() {
                 const width = window.innerWidth;
                 if (width < 768) {
-                    
+                    // 處理小螢幕情形
                 } else if (width >= 768 && width < 992) {
-                    
+                    // 處理中等螢幕情形
                 } else {
-                    
+                    // 處理大螢幕情形
                 }
             },
             renderTables() {
                 if (this.selectedDatabase) {
-                    
                     this.inputText = '';
                     this.posAnalysis = '';
                     this.dependencyHtml = '';
                     this.convertedSQL = '';
                     this.sqlResult = '';
+                    this.$refs.ExecTime.innerText = '';
                     this.errorAnalysis = '';
                     this.exampleQueries = [];
+                    this.chatgptSql = '';
+                    this.$refs.chatgptResult.innerText = '';
+                    this.$refs.chatgptSqlExecTime.innerText = '';
+                    this.geminiSql = '';
+                    this.$refs.geminiResult.innerText = ''; 
+                    this.$refs.geminiSqlExecTime.innerText = ''; 
+                    this.claudeSql = '';
+                    this.$refs.claudeResult.innerText = '';
+                    this.$refs.claudeSqlExecTime.innerText = '';
 
                     axios.post('/generate_table', { database: this.selectedDatabase })
                         .then(response => {
@@ -219,7 +237,6 @@
                 }
             },
             openModal() {
-                
                 $('#myModal').modal('show');
             },
             performAnalysis() {
@@ -251,6 +268,7 @@
                         this.isLoadingAnalysis = false;
                         this.convertedSQL = '';
                         this.sqlResult = '';
+                        this.ExecTime = '';
                     });
             },
             fetchDependency() {
@@ -269,11 +287,13 @@
                         this.isLoadingAnalysis = false;
                         this.convertedSQL = '';
                         this.sqlResult = '';
+                        this.$refs.ExecTime.innerText = '';
                     })
                     .finally(() => {
                         this.isLoadingAnalysis = false;
                         this.convertedSQL = '';
                         this.sqlResult = '';
+                        this.$refs.ExecTime.innerText = '';
                     });
             },
             processSvg(svgHtml) {
@@ -282,37 +302,34 @@
                 const svgElement = svgDoc.getElementsByTagName('svg')[0];
 
                 if (svgElement) {
-                    
                     svgElement.setAttribute('viewBox', `0 0 ${svgElement.width.baseVal.value} ${svgElement.height.baseVal.value}`);
 
-                    
                     const textElements = svgDoc.querySelectorAll('text');
                     textElements.forEach(el => {
-                        el.style.fontSize = '24px'; 
+                        el.style.fontSize = '24px';
                     });
 
-                    
                     this.dependencyHtml = svgElement.outerHTML;
                 }
                 this.isLoadingAnalysis = false;
             },
             adjustModalSize() {
                 const width = window.innerWidth;
-                let modalSize = 'modal-lg'; 
+                let modalSize = 'modal-lg';
 
                 if (width < 768) {
-                    modalSize = 'modal-sm'; 
+                    modalSize = 'modal-sm';
                 } else if (width >= 768 && width < 992) {
-                    modalSize = 'modal-md'; 
+                    modalSize = 'modal-md';
                 } else if (width >= 1200) {
-                    modalSize = 'modal-lg'; 
+                    modalSize = 'modal-lg';
                 }
 
                 $('#svgModal .modal-dialog').removeClass('modal-sm modal-md modal-lg').addClass(modalSize);
             },
             openSvgModal() {
                 $('#svgModal').modal('show');
-                this.adjustModalSize(); 
+                this.adjustModalSize();
             },
             convertToSQL() {
                 if (!this.selectedDatabase || !this.inputText) {
@@ -334,6 +351,7 @@
                     .finally(() => {
                         this.isLoadingConvert = false;
                         this.sqlResult = '';
+                        this.$refs.ExecTime.innerText = '';
                     });
             },
             executeSQL() {
@@ -352,6 +370,12 @@
                 axios.post('/query', payload)
                     .then(response => {
                         this.sqlResult = response.data.res;
+
+                        const execTime = response.data.exec_time;
+                        if (execTime) {
+                            this.$refs['ExecTime'].innerText = `執行時間: ${execTime} ms`; 
+
+                        }
                     })
                     .finally(() => {
                         this.isLoadingExecute = false;
@@ -359,24 +383,18 @@
             },
             processText(text, structure) {
                 console.log(structure)
-                
                 text = text.replace(/\?/g, "").replace(/\./g, "");
-                
                 let splitText = text.split(' ');
 
                 let res = {};
 
-                
                 for (let splitTextTemp of splitText) {
-                    
                     if (splitTextTemp === '?' || '.' === splitTextTemp || '' === splitTextTemp) {
                         continue;
                     }
 
-                    
                     splitTextTemp = splitTextTemp.replace(/\?/g, "").replace(/\./g, "");
 
-                    
                     res[splitTextTemp] = structure[splitTextTemp];
                 }
 
@@ -405,6 +423,7 @@
                     return;
                 }
 
+                this.isLoadingGPT = true;
                 const payload = {
                     database: this.selectedDatabase,
                     question: this.inputText,
@@ -417,6 +436,9 @@
                         }
                     })
                     .finally(() => {
+                        this.isLoadingGPT = false;
+                        this.$refs.chatgptSqlDisplay.innerText = '';
+                        this.$refs.chatgptSqlExecTime.innerText = '';
                     });
             },
             fetchGemini() {
@@ -425,6 +447,7 @@
                     return;
                 }
 
+                this.isLoadingGemini = true;
                 const payload = {
                     database: this.selectedDatabase,
                     question: this.inputText,
@@ -437,6 +460,9 @@
                         }
                     })
                     .finally(() => {
+                        this.isLoadingGemini = false;
+                        this.$refs.geminiSqlDisplay.innerText = '';
+                        this.$refs.geminiSqlExecTime.innerText = '';
                     });
             },
             fetchClaude() {
@@ -445,6 +471,7 @@
                     return;
                 }
 
+                this.isLoadingClaude = true;
                 const payload = {
                     database: this.selectedDatabase,
                     question: this.inputText,
@@ -457,6 +484,9 @@
                         }
                     })
                     .finally(() => {
+                        this.isLoadingClaude = false;
+                        this.$refs.claudeSqlDisplay.innerText = '';
+                        this.$refs.claudeSqlExecTime.innerText = '';
                     });
             },
             executeModelSQL(resultElement) {
@@ -497,37 +527,40 @@
 
                 axios.post('/execute_sql', payload)
                     .then(response => {
-                        this[resultRef] = response.data.res; 
-                        this.$refs[resultRef + 'Display'].innerHTML = this[resultRef]; 
+                        this[resultRef] = response.data.res;
+                        this.$refs[resultRef + 'Display'].innerHTML = this[resultRef];
+
+                        const execTime = response.data.exec_time;
+                        if (execTime) {
+                            this.$refs[resultRef + 'ExecTime'].innerText = `執行時間: ${execTime} ms`; 
+                        }
+                        
                     })
                     .catch(error => {
                         console.error('SQL 執行失敗:', error);
                         this[resultRef] = '執行失敗: ' + error.message;
-                        this.$refs[resultRef + 'Display'].innerHTML = this[resultRef]; 
+                        this.$refs[resultRef + 'Display'].innerHTML = this[resultRef];
                     })
                     .finally(() => {
                     });
             }
         },
         mounted() {
-            
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
             window.addEventListener('resize', this.handleResize);
-            this.handleResize(); 
+            this.handleResize();
             window.addEventListener('resize', this.adjustModalSize);
-            this.adjustModalSize(); 
+            this.adjustModalSize();
         },
         beforeUnmount() {
             window.removeEventListener('resize', this.handleResize);
         },
         watch: {
             selectedDatabase(newVal, oldVal) {
-                
                 this.databaseImage = newVal === '資料庫-1' ? '/static/db_1.png' : '/static/db_2.png';
-
             }
         }
     }).mount('#app');

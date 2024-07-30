@@ -1,6 +1,5 @@
 from helper.base_define import data_get, dd, dump, similarity
 from graph.base_define import Shape, NodeAttr, Node, Graph
-from vector_db.query_data import is_empty_result, semantic_search
 from service.sentence_analysis_service import SentenceAnalysis
 
 def get_logical_form(graph: Graph, pbar) -> list:
@@ -16,7 +15,32 @@ def get_logical_form(graph: Graph, pbar) -> list:
     connects_temp = graph.search_connections(Shape.predicate.value, Shape.entity.value, False)
 
     if len(connects_temp) == 0:
-        return []
+        connects_temp = graph.search_connections(Shape.predicate.value, Shape.diamond.value, False)
+
+        if len(connects_temp) != 1:
+            return []
+
+        (node1_temp, node2_temp) = connects_temp[0]
+
+        if node2_temp.connections[0].node.shape == Shape.entity.value:
+            entity_connects = graph.search_connections(Shape.entity.value, Shape.predicate.value, False)
+
+            if NodeAttr.range.value in node2_temp.connections[0].node.ref and (NodeAttr.negative.value in node2_temp.ref) == False:
+                table_name, logical_form_temp = simplify_primary_key_scenario_range(table_name, node1_temp, node2_temp, entity_connects)
+            
+            elif NodeAttr.range.value in node2_temp.connections[0].node.ref and (NodeAttr.negative.value in node2_temp.ref) == True:
+                table_name, logical_form_temp = scenario_five(table_name, node1_temp, relation_diamond_node_temp)
+
+            else:
+                (node3_temp, node4_temp) = entity_connects[0]
+                table_name, logical_form_temp = simplify_primary_key_scenario_basic(table_name, node1_temp, node2_temp, node3_temp)
+
+        else:
+            table_name, logical_form_temp = simplify_primary_key_scenario_one(table_name, node1_temp, node2_temp)
+
+        logical_form.append(logical_form_temp)
+
+        return logical_form
 
     for connect_temp in connects_temp:
         (node1_temp, node2_temp) = connect_temp
@@ -46,6 +70,8 @@ def get_logical_form(graph: Graph, pbar) -> list:
 
                         if connection_temp.node.shape == Shape.entity.value:
                             entity_node_temp_lists.append(connection_temp.node)
+            
+            relation_diamond_node_temp = switch_connections(relation_diamond_node_temp)
 
             table_name, logical_form_temp = prepare_table(table_name, node1_temp, all_node)
 
@@ -69,7 +95,7 @@ def get_logical_form(graph: Graph, pbar) -> list:
                     and node1_temp.connections[0].node.name == relation_diamond_node_temp.connections[1].node.name):
                     relation_diamond_node_temp = switch_connections(relation_diamond_node_temp)
 
-                table_name, logical_form_temp = simplify_scenario_three(table_name, node1_temp, relation_diamond_node_temp)
+                table_name, logical_form_temp = simplify_scenario_not(table_name, node1_temp, relation_diamond_node_temp)
 
                 logical_form.append(logical_form_temp)
 
@@ -126,7 +152,11 @@ def get_logical_form(graph: Graph, pbar) -> list:
 
                 table_name, logical_form_temp = multi_scenario_one(table_name, logical_form_temp, entity_node_temp_lists)
 
+                # logical_form.append(logical_form_temp)
+
             logical_form.append(logical_form_temp)
+
+            continue
 
         if len(muti_relation_diamond_node_temp_lists) != 0:
             continue
@@ -134,8 +164,7 @@ def get_logical_form(graph: Graph, pbar) -> list:
         node1_temp_entity_node = graph.search_by_shape_and_name_to_another_shape(Shape.entity.value, node2_temp.name, Shape.predicate.value)
 
         if node1_temp_entity_node != None:
-            table_name, logical_form_temp = scenario_four(table_name, node1_temp, node1_temp_entity_node)
-
+            table_name, logical_form_temp = simplify_rec_scenario_one(table_name, node1_temp, node1_temp_entity_node)
             logical_form.append(logical_form_temp)
 
             continue
@@ -156,10 +185,38 @@ def base_select(select, tables, condition) -> str:
     joined_tables = ', '.join(tables)
     return f"SELECT DISTINCT {select} FROM {joined_tables} WHERE {condition}"
 
+def simplify_base_select(select, tables, condition) -> str:
+    joined_tables = ', '.join(tables)
+    return f"SELECT {select} FROM {joined_tables} WHERE {condition}"
+
+def simplify_base_select_no_tmp(select, tables, condition) -> str:
+    joined_tables = ', '.join(tables)
+    return f"SELECT DISTINCT {select} FROM {joined_tables} WHERE {condition}"
+
 def base_where(search_muti_list) -> str:
     return ' AND '.join([f'{temp["table"]}.{temp["column"]} {temp["operation"]} {temp["value"]}' for temp in search_muti_list])
 
 def where_not_exists(sub_query , table, search_list = None, search_muti_list = None, condition = None) -> str:
+    search = None
+
+    if search_list != None:
+        search = ' AND '.join([f"{table}.{temp}" for temp in search_list])
+
+    if search_muti_list != None:
+        search = ' AND '.join([
+            f'{temp["table1"]}.{temp["value1"]}' if 'value1' in temp else f'{temp["table1"]}.{temp["column1"]} = {temp["table2"]}.{temp["column2"]}'
+            for temp in search_muti_list
+        ])
+
+    if search == None and condition != None:
+        return f" NOT EXISTS ( SELECT 1 FROM {sub_query} WHERE {condition} )"
+
+    if condition != None:
+        return f" NOT EXISTS ( SELECT 1 FROM {sub_query} WHERE {search} AND {condition} )"
+
+    return f" NOT EXISTS ( SELECT 1 FROM {sub_query} WHERE {search} )"
+
+def simplify_where_not_exists(sub_query , table = None, search_list = None, search_muti_list = None, condition = None) -> str:
     search = None
 
     if search_list != None:
@@ -202,8 +259,14 @@ def where_exists(sub_query , table, search_list = None, search_muti_list = None,
 def join_where(table, condition_table1, condition_column1, condition_table2, condition_column2, other) -> str:
     return f"{table}.{condition_column1} = {condition_table1}.{condition_column1} AND {table}.{condition_column2} = {condition_table2}.{condition_column2} {other}"
 
+def simplify_join_where(table, condition_table1, condition_column1, other) -> str:
+    return f"{table}.{condition_column1} = {condition_table1}.{condition_column1} {other}"
+
 def entity_connect_to_predicate(table, search_list) -> str:
     return ' AND ' +  ' AND '.join([f"{table}.{search}" for search in search_list])
+
+def simplify_connect_to_predicate(search_list) -> str:
+    return ' AND ' +  ' AND '.join([f"{search}" for search in search_list]) # ' AND ' + 'pno = P2'
 
 def prepare_table(table_name, node1_temp, all_node) -> list:
     logical_form_temp = []
@@ -216,7 +279,7 @@ def prepare_table(table_name, node1_temp, all_node) -> list:
     logical_form_temp.append(
         {
             "sql": base_select(
-                    table_name['mapping'][node1_temp.connections[0].node.name] + '.' + node1_temp.name.split('=')[0].strip(),   # 使用 strip() 去除可能的空白字符
+                    table_name['mapping'][node1_temp.connections[0].node.name] + '.' + node1_temp.name.split('=')[0].strip(),
                     sub_query_list_temp,
                     '???'
                 )
@@ -263,49 +326,50 @@ def multi_scenario_one(table_name, logical_form_temp, entity_node_temp_lists) ->
 def simplify_scenario_one(table_name, node1_temp, node2_temp_releation_node) -> list:
     logical_form_temp = []
 
-    (table_name, sub_query_temp1) = build_sub_query(table_name, node2_temp_releation_node.connections[0].node.name)
-    (table_name, sub_query_temp2) = build_sub_query(table_name, node2_temp_releation_node.name)
-
     logical_form_temp.append(
         {
-            "sql": base_select(
-                    table_name['mapping'][node1_temp.connections[0].node.name] + '.' + node1_temp.name.split('=')[0].strip(),
+            "sql": simplify_base_select_no_tmp(
+                    node1_temp.name.split('=')[0].strip(),
                     [
-                        sub_query_temp1
+                        node1_temp.connections[0].node.name,
+                        node2_temp_releation_node.name
                     ],
                     '???'
                 )
         }
     )
-
-    search_list_temp = [
-        {
-            'table1':  table_name['mapping'][node2_temp_releation_node.name],
-            'column1': node2_temp_releation_node.connections[0].name,
-            'table2': table_name['mapping'][node2_temp_releation_node.connections[0].node.name],
-            'column2': node2_temp_releation_node.connections[0].name,
-        }
-    ]
-
+    
+    search_list_temp = []
     for node_temp in node2_temp_releation_node.connections:
-        if node_temp.node.shape == Shape.predicate.value:
-            search_list_temp.append(
-                {
-                    'table1': table_name['mapping'][node2_temp_releation_node.name],
-                    'value1': node_temp.node.name,
-                }
-            )
+        if (node_temp.node.shape == Shape.predicate.value) and (node1_temp.connections[0].node.name != node2_temp_releation_node.name) :
+            search_list_temp.append(node2_temp_releation_node.connections[1].node.name)
+            modifier_list_temp = node2_temp_releation_node.connections[1].name
+            continue
+        
+        if (node_temp.node.shape == Shape.predicate.value) and (node1_temp.connections[0].node.name == node2_temp_releation_node.name):
+            modifier_list_temp = ''
+            dd("新的情境")
 
     logical_form_temp.append(
-            {
-                "sql": where_exists(
-                        sub_query_temp2,
-                        table_name['mapping'][node2_temp_releation_node.name],
-                        None,
-                        search_list_temp,
-                    )
-            }
-        )
+        {
+            "sql": simplify_join_where(
+                    node2_temp_releation_node.name,
+                    node2_temp_releation_node.connections[0].node.name,
+                    node2_temp_releation_node.connections[0].name,
+                    'AND ???'
+                )
+        }
+    )
+    
+    logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace("AND ???", '???')
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_connect_to_predicate(
+                    search_list_temp
+                )
+        }
+    )
 
     return table_name, logical_form_temp
 
@@ -392,7 +456,6 @@ def scenario_range(table_name, node1_temp, node2_temp_releation_node) -> list:
     for node_temp in node2_temp_releation_node.connections[1].node.connections:
         if node_temp.node.shape == Shape.predicate.value:
             search_list_temp.append(node_temp.node.name)
-    
 
     if len(search_list_temp) == 0 :
         search_list_temp = None
@@ -498,67 +561,70 @@ def scenario_three(table_name, node1_temp, node2_temp_releation_node) -> list:
 
     return table_name, logical_form_temp
 
-def simplify_scenario_three(table_name, node1_temp, node2_temp_releation_node) -> list:
+def simplify_scenario_not(table_name, node1_temp, node2_temp_releation_node) -> list:
     logical_form_temp = []
-
-    (table_name, sub_query_temp1) = build_sub_query(table_name, node2_temp_releation_node.connections[0].node.name)
-    (table_name, sub_query_temp2) = build_sub_query(table_name, node2_temp_releation_node.name)
 
     logical_form_temp.append(
         {
-            "sql": base_select(
-                    table_name['mapping'][node1_temp.connections[0].node.name] + '.' + node1_temp.name.split('=')[0].strip(),
+            "sql": simplify_base_select_no_tmp(
+                    node1_temp.name.split('=')[0].strip(),
                     [
-                        sub_query_temp1
+                        node1_temp.connections[0].node.name,
+                    ],
+                    '???'
+                )
+        }
+    )
+    
+    search_list_temp = []
+    for node_temp in node2_temp_releation_node.connections:
+        if node_temp.node.shape == Shape.predicate.value:
+            search_list_temp.append(node_temp.node.name)
+
+    if len(search_list_temp) == 0 :
+        search_list_temp = None
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_where_not_exists(
+                    node2_temp_releation_node.name,
+                    None,
+                    None,
+                    [
+                        {
+                            'table1': node2_temp_releation_node.name,
+                            'column1': node2_temp_releation_node.connections[0].name,
+                            'table2': node2_temp_releation_node.connections[0].node.name,
+                            'column2': node2_temp_releation_node.connections[0].name,
+                        }
                     ],
                     '???'
                 )
         }
     )
 
-    search_list_temp = [
-        {
-            'table1':  table_name['mapping'][node2_temp_releation_node.name],
-            'column1': node2_temp_releation_node.connections[0].name,
-            'table2': table_name['mapping'][node2_temp_releation_node.connections[0].node.name],
-            'column2': node2_temp_releation_node.connections[0].name,
-        }
-    ]
-
-    for node_temp in node2_temp_releation_node.connections:
-        if node_temp.node.shape == Shape.predicate.value:
-            search_list_temp.append(
-                {
-                    'table1': table_name['mapping'][node2_temp_releation_node.name],
-                    'value1': node_temp.node.name,
-                }
-            )
+    logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace("AND ???", '???')
 
     logical_form_temp.append(
-            {
-                "sql": where_not_exists(
-                        sub_query_temp2,
-                        table_name['mapping'][node2_temp_releation_node.name],
-                        None,
-                        search_list_temp,
-                    )
-            }
-        )
+        {
+            "sql": simplify_connect_to_predicate(
+                    search_list_temp
+                )
+        }
+    )
 
     return table_name, logical_form_temp
 
-def scenario_four(table_name, node1_temp, node1_temp_entity_node) -> list:
+def simplify_rec_scenario_one(table_name, node1_temp, node1_temp_entity_node) -> list:
     logical_form_temp = []
-
-    (table_name, sub_query_temp1) = build_sub_query(table_name, node1_temp.connections[0].node.name)
 
     logical_form_temp.append(
         {
-            "sql": base_select(
-                    table_name['mapping'][node1_temp.connections[0].node.name] + '.' + node1_temp.name.split('=')[0].strip(),
+            "sql": simplify_base_select(
+                    node1_temp.name.split('=')[0].strip(),
 
                     [
-                        sub_query_temp1,
+                        node1_temp.connections[0].node.name,
                     ],
                     '???'
                 )
@@ -576,8 +642,44 @@ def scenario_four(table_name, node1_temp, node1_temp_entity_node) -> list:
 
     logical_form_temp.append(
         {
-            "sql": entity_connect_to_predicate(
-                    table_name['mapping'][node1_temp_entity_node.name],
+            "sql": simplify_connect_to_predicate(
+                    search_list_temp
+                )
+        }
+    )
+   
+    logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace(" AND", '', 1)
+
+    return table_name, logical_form_temp
+
+def simplify_primary_key_scenario_one(table_name, node1_temp, node1_temp_diamond_node) -> list:
+    logical_form_temp = []
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_base_select(
+                    node1_temp.name.split('=')[0].strip(),
+
+                    [
+                        node1_temp.connections[0].node.name,
+                    ],
+                    '???'
+                )
+        }
+    )
+
+    search_list_temp = []
+
+    for node_temp in node1_temp_diamond_node.connections:
+        if node_temp.node.shape == Shape.predicate.value:
+            search_list_temp.append(node_temp.node.name)
+
+    if len(search_list_temp) == 0:
+        raise Exception("沒有連接到橢圓形")
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_connect_to_predicate(
                     search_list_temp
                 )
         }
@@ -586,6 +688,128 @@ def scenario_four(table_name, node1_temp, node1_temp_entity_node) -> list:
     logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace(" AND", '', 1)
 
     return table_name, logical_form_temp
+
+def simplify_primary_key_scenario_basic(table_name, node1_temp, node2_temp, node3_temp) -> list: 
+    logical_form_temp = []
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_base_select_no_tmp(
+                    node1_temp.name.split('=')[0].strip(),
+
+                    [
+                        node1_temp.connections[0].node.name,
+                        node2_temp.connections[0].node.name,
+                    ],
+                    '???'
+                )
+        }
+    )
+
+    search_list_temp = []
+    for node_temp in node2_temp.connections:
+        if node_temp.node.shape == Shape.entity.value and node2_temp.connections[0].node.name == node3_temp.name:
+            search_list_temp.append(node3_temp.connections[0].node.name)
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_join_where(
+                    node2_temp.name,
+                    node2_temp.connections[0].node.name,
+                    node2_temp.connections[0].name,
+                    'AND ???'
+                )
+        }
+    )
+
+    logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace("AND ???", '???')
+
+    if len(search_list_temp) == 0:
+        raise Exception("沒有連接到橢圓形")
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_connect_to_predicate(
+                    search_list_temp
+                )
+        }
+    )
+    
+    return table_name, logical_form_temp
+
+def simplify_primary_key_scenario_range(table_name, node1_temp, node2_temp, node3_temp) -> list: 
+    logical_form_temp = []
+    
+    (table_name, sub_query_temp1) = build_sub_query(table_name, node2_temp.name)
+    
+    logical_form_temp.append(
+        {
+            "sql": base_select(
+                    node1_temp.name.split('=')[0].strip(),
+                    [
+                        sub_query_temp1
+                    ],
+                    '???'
+                )
+        }
+    )
+
+    search_list_temp = []
+    for node_temp in node2_temp.connections:
+        if node_temp.node.shape == Shape.entity.value:
+            if node3_temp:
+                dump('總體限量＋特定條件')
+                node3, predicate_node = node3_temp[0]
+
+                if predicate_node.shape == Shape.predicate.value:
+                    search_list_temp.append(predicate_node.name)
+
+
+    if len(search_list_temp) == 0 :
+        search_list_temp = None
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_where_not_exists(
+                    node_temp.node.name,
+                    node2_temp.connections[0].node.name,
+                    search_list_temp,
+                    None,
+                    '???'
+                )
+        }
+    )
+    dump(logical_form_temp)
+
+    logical_form_temp.append(
+        {
+            "sql": simplify_where_not_exists(
+                    node2_temp.name,
+                    None,
+                    None,
+                    [
+                        {
+                            'table1': node2_temp.name,
+                            'column1': node2_temp.connections[0].name,
+                            'table2': node2_temp.connections[0].node.name,
+                            'column2': node2_temp.connections[0].name,
+                        },
+                        {
+                            'table1': node2_temp.name,
+                            'column1': node1_temp.name.split('=')[0].strip(),
+                            'table2': table_name['mapping'][node2_temp.name],
+                            'column2': node1_temp.name.split('=')[0].strip(),
+                        }
+                    ]
+                )
+        }
+    )
+    dump(logical_form_temp)
+
+    logical_form_temp[-1]['sql'] = logical_form_temp[-1]['sql'].replace("AND ???", '???')
+    
+    return table_name, logical_form_temp
+
 
 def scenario_five(table_name, node1_temp, node2_temp_releation_node) -> list:
     logical_form_temp = []
@@ -743,11 +967,34 @@ def intersect_to_and(sql_query):
     final_query = f"{main_query} WHERE {merged_conditions}"
     return final_query
 
+import re
+
+def union_to_or(sql_query):
+    subqueries = re.findall(r'SELECT .*? FROM .*? WHERE .*?(?= union |$)', sql_query, re.IGNORECASE)
+
+    if len(subqueries) < 2:
+        return sql_query
+
+    conditions = []
+    for subquery in subqueries:
+        where_clause = re.search(r'WHERE (.*)', subquery, re.IGNORECASE)
+        if where_clause:
+            conditions.append('(' + where_clause.group(1).strip() + ')')
+
+    if len(conditions) < 2:
+        return sql_query
+
+    merged_conditions = ' OR '.join(conditions)
+
+    main_query = re.match(r'(SELECT .*? FROM .*?) WHERE', subqueries[0], re.IGNORECASE).group(1)
+
+    final_query = f"{main_query} WHERE {merged_conditions}"
+    return final_query
 
 def combine_sql(sql_lists: list, type: str) -> str:
     sql = f" {type} ".join(sql_lists)
 
-    # if type == 'intersect':
-    #     return intersect_to_and(sql)
+    if type == 'merge_or':
+        sql = sql.replace(' AND ', ' OR ')
 
     return sql

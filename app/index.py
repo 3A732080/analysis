@@ -20,12 +20,10 @@ def home():
 def styles():
     return send_from_directory(os.getcwd(), 'styles.css')
 
-
 @app.route('/images/<dbname>')
 def serve_database_image(dbname):
     filename = f"{dbname}.png"
     return send_from_directory(app.static_folder, filename)
-
 
 @app.route('/generate_table', methods=['POST'])
 def generate_table():
@@ -107,7 +105,8 @@ def query():
     else:
         from question_data_2 import exec
 
-    return jsonify({"res": exec(question, action)})
+    table, exec_time = exec(question, action)
+    return jsonify({"res": (table), "exec_time": exec_time})
 
 @app.route('/chatgpt_api', methods=['POST'])
 def chat_chatGPT():
@@ -136,7 +135,6 @@ def chat_gemini():
     
     gemini = GoogleGemini()
     sql = gemini.main(question, database)
-    
     dump(sql)
     return jsonify({"success": True,"res": sql})
 
@@ -152,7 +150,6 @@ def chat_claude():
 
     claude = Claude()
     sql = claude.main(question, database)
-    
 
     return jsonify({"success": True,"res": sql})
 
@@ -166,15 +163,19 @@ def execute_query():
     else:
         from question_data_2 import exec
     
-    dump(sql)
     db = DatabaseConnection('mssql:1433', 'sa', 'YourStrong!Passw0rd', 'master')
     result = db.query(sql)
-    dump(result)
+    
     if result['success']:
-        dump(print_table_result_html(result['data']))
-        return jsonify({"res": (print_table_result_html(result['data']))})
+        print(f"執行總時間: {result['execution_time']} ms")
+        table, exec_time = print_table_result_html(result)
+
+        return jsonify({"res": (table), "exec_time": exec_time})
+    
     else:
-        
+        if result['execution_time'] == None:
+            result['execution_time'] = 0
+        dump(f"執行總時間: {result['execution_time']} ms")
         return jsonify({"res": "錯誤！無效 SQL"})
 
 

@@ -8,17 +8,25 @@ data = {
             "surrogate": 'tno',
             "modifiers": ["dept"],
             "similar_of_table": [
-                
+                'taught'
             ],
             "similar_of_column": {
                 "tno": [
 
                 ],
                 "tname": [
-
+                    'by'
                 ],
                 "dept": [
 
+                ]
+            },
+            "n": {
+                "tno": [
+                ],
+                "tname": [
+                ],
+                "dept": [
                 ]
             },
             "values": [
@@ -48,6 +56,16 @@ data = {
 
                 ],
             },
+            "n": {
+                "sno": [
+                ],
+                "sname": [
+                ],
+                "major": [
+                ],
+                "year": [
+                ],
+            },
             "values": [
                 ['S1', 'Claire', 'CS', 2022],
                 ['S2', 'Ryan', 'IM', 2022],
@@ -69,13 +87,23 @@ data = {
 
                 ],
                 "cname": [
-                    
+                    'DBMS', 'Advanced_DBMS', 'Computer_Programming'
                 ],
                 "dept": [
 
                 ],
                 "time": [
 
+                ],
+            },
+            "n": {
+                "cno": [
+                ],
+                "cname": [
+                ],
+                "dept": [
+                ],
+                "time": [
                 ],
             },
             "values": [
@@ -108,6 +136,12 @@ data = {
                 ],
                 "cno": [
 
+                ],
+            },
+            "n": {
+                "sno": [
+                ],
+                "cno": [
                 ],
             },
             "values": [
@@ -143,6 +177,12 @@ data = {
                 ],
                 "cno": [
 
+                ],
+            },
+            "n": {
+                "sno": [
+                ],
+                "cno": [
                 ],
             },
             "values": [

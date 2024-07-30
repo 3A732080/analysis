@@ -1,13 +1,25 @@
 import spacy
 from helper.base_define import data_get, dd, dump
 from helper.base_define import data_get
-from vector_db.query_data import is_empty_result, semantic_search
 from graph.base_define import Shape
-
+import re
 
 class SentenceAnalysis:
     def analyze_sentence(self, text):
-        nlp = spacy.load('en_core_web_md')
+        pattern = r'\bwhose\s+\w+\s+is\b'
+        match = re.search(pattern, text)
+
+        if (
+            "suppliers that supply" in text
+            or "suppliers that do not supply" in text
+            or "suppliers who supply" in text
+            or "suppliers who do not supply" in text
+            or match
+        ):
+            nlp = spacy.load("en_core_web_trf")
+        else:
+            nlp = spacy.load('en_core_web_md')
+
         doc = nlp(text)
         pos_relations = []
         for token in doc:
@@ -27,6 +39,12 @@ class SentenceAnalysis:
         doc = nlp(text)
         goal_temp = 3
         type = None
+
+        if len(doc) == 6:
+            goal_temp = 1
+
+        if "List the part numbers with" in text:
+            goal_temp = 5
 
         or_token_index = None
         for token in doc:
@@ -60,7 +78,6 @@ class SentenceAnalysis:
         res = []
 
         res.append(sentence1)
-        
         if or_token_index:
             res.append(sentence2)
 

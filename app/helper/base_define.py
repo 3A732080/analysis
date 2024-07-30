@@ -35,7 +35,7 @@ def similarity(text1, text2):
 
     vec1 = nlp(text1).vector
     vec2 = nlp(text2).vector
-    
+
     return vec1.dot(vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 def print_table_leetcode_style(data):
@@ -97,8 +97,8 @@ def generate_table_html(data):
 
 
 def print_table_result_html(data):
-    columns = data['column']
-    values = data['value']
+    columns = data['data']['column']
+    values = data['data']['value']
 
     column_widths = []
     for i, col in enumerate(columns):
@@ -129,11 +129,11 @@ def print_table_result_html(data):
         html_output += "</tr>"
     html_output += "</tbody></table>"
 
-    return html_output
+    return html_output, data['execution_time']
 
 def print_table_result(data, pbar):
-    columns = data['column']
-    values = data['value']
+    columns = data['data']['column']
+    values = data['data']['value']
 
     column_widths = []
     for i, col in enumerate(columns):

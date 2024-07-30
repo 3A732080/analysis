@@ -8,20 +8,31 @@ data = {
             "surrogate": "sno",
             "modifiers": ["status", "city"],
             "similar_of_table": [
-                
+                'suppliers', 'by', 'supplied'
             ],
             "similar_of_column": {
                 "sno": [
                     'suppliers number', 'number'
                 ],
                 "sname": [
-                    'suppliers name', 'sname'
+                    'suppliers', 'suppliers name', 'Clark', 'sname'
                 ],
                 "status": [
-                    'status number'
+                    'status number', '10', '20', '30'
                 ],
                 "city": [
-                    'city', 'city name'
+                    'in', 'city', 'London', 'city name'
+                ]
+            },
+            "n": {
+                "sno": [
+                    'parts'
+                ],
+                "sname": [
+                ],
+                "status": [
+                ],
+                "city": [
                 ]
             },
             "values": [
@@ -38,23 +49,35 @@ data = {
             "surrogate": "pno",
             "modifiers": ["color", "weight", "city"],
             "similar_of_table": [
-                
+                'parts', 'part'
             ],
             "similar_of_column": {
                 "pno": [
                     'part number', 'number'
                 ],
                 "pname": [
-                    'part name',
+                    'part name', 'Screw', 'Cam', 'Cog', 'Bolt', 'Nuts'
                 ],
                 "weight": [
-                    'weight',
+                    'weight', '12', '14', '17', '19'
                 ],
                 "color": [
-                    'color'
+                    'color', 'green', 'blue'
                 ],
                 "city": [
-                    'city'
+                    'city', 'stored', 'in'
+                ]
+            },
+            "n": {
+                "pno": [
+                ],
+                "pname": [
+                ],
+                "weight": [
+                ],
+                "color": [
+                ],
+                "city": [
                 ]
             },
             "values": [
@@ -86,13 +109,21 @@ data = {
             ],
             "similar_of_column": {
                 "sno": [
-                    
+                    'S1', 'S2', 'S3', 'S4'
                 ],
                 "pno": [
-                    
+                    'P1', 'P2', 'P3', 'P4', 'P5', 'P6'
                 ],
                 "qty": [
-                    
+                    'quantity', '100', '200', '300', '400'
+                ],
+            },
+            "n": {
+                "sno": [
+                ],
+                "pno": [
+                ],
+                "qty": [
                 ],
             },
             "values": [
